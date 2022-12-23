@@ -181,13 +181,13 @@ async def generate_bulk_id_buffer(
         )
         for update in change_buffer
     ]
-    # if await collection.find_one(
-    #     {"_id": {"$in": [update.data["_id"] for update in id_insert_buffer]}},
-    #     session=session,
-    # ):
-    #     return await generate_bulk_id_buffer(
-    #         collection, change_buffer, id_provider, session
-    #     )
+    if await collection.find_one(
+        {"_id": {"$in": [update.data["_id"] for update in id_insert_buffer]}},
+        session=session,
+    ):
+        return await generate_bulk_id_buffer(
+            collection, change_buffer, id_provider, session
+        )
     return id_insert_buffer
 
 
