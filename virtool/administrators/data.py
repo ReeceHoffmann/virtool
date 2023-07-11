@@ -16,6 +16,7 @@ from virtool.data.piece import DataLayerPiece
 from virtool.errors import DatabaseError
 from virtool.groups.db import lookup_groups_minimal_by_id, lookup_group_minimal_by_id
 from virtool.groups.utils import merge_group_permissions
+from virtool.mongo.core import Mongo
 from virtool.mongo.transforms import apply_transforms
 from virtool.users.db import (
     fetch_complete_user,
@@ -48,7 +49,7 @@ class AdministratorsData(DataLayerPiece):
     name = "administrators"
 
     def __init__(
-        self, authorization_client: AuthorizationClient, mongo: "DB", pg: AsyncEngine
+        self, authorization_client: AuthorizationClient, mongo: Mongo, pg: AsyncEngine
     ):
         self._authorization_client = authorization_client
         self._mongo = mongo
@@ -97,7 +98,7 @@ class AdministratorsData(DataLayerPiece):
         )
 
         result["items"] = await apply_transforms(
-            result["items"], [AttachPermissionsTransform(self._pg, self._mongo)]
+            result["items"], [AttachPermissionsTransform(self._mongo, self._pg)]
         )
 
         result["items"] = [
@@ -116,7 +117,7 @@ class AdministratorsData(DataLayerPiece):
         """
 
         user = await fetch_complete_user(
-            self._pg, self._mongo, self._authorization_client, user_id
+            self._authorization_client, self._mongo, self._pg, user_id
         )
 
         if not user:
